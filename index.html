@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Зодиак (2×CD) / ZODIAC</title>
+<style>
+  :root{
+    --bg:#050814; 
+    --bg2:#0f1528; 
+    --card:#1a2238;
+    --accent:#e8c36a; 
+    --accent2:#b8953b;
+    --text:#f0f4f8; 
+    --muted:#8a9bb5;
+    --glow:rgba(232,195,106,.3);
+  }
+  
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  
+  body{
+    font-family: 'Georgia', 'Times New Roman', serif; 
+    background: radial-gradient(circle at 50% 0%,var(--bg2) 0%,var(--bg) 70%);
+    color:var(--text); min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; padding:24px 16px 48px; /* Вернули обычный отступ */
+    gap:24px; width: 100%; max-width: 100vw; overflow-x: hidden;
+    -webkit-user-select: none; user-select: none; line-height: 1.5;
+  }
+
+  .album { text-align:center; display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; max-width:600px; margin-top: 20px;}
+  .album__cover { width:min(280px,72vw); aspect-ratio:1/1; border-radius:4px; object-fit:cover; box-shadow:0 20px 50px rgba(0,0,0,0.8); border:1px solid rgba(232,195,106,.3); pointer-events: none; }
+  .album__title { font-size:clamp(26px,6vw,44px); font-weight:normal; letter-spacing:.02em; color: #fff; text-transform: uppercase; line-height: 1.1; }
+  .album__sub { color:var(--accent); font-size:14px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; font-family: system-ui, sans-serif; }
+
+  .album__announce {
+    max-width: 540px; font-size: 14px; color: var(--muted); font-style: italic;
+    line-height: 1.6; margin: 10px 0; padding: 15px 20px;
+    border-top: 1px solid rgba(232,195,106,.2);
+    border-bottom: 1px solid rgba(232,195,106,.2); text-align: center;
+  }
+
+  .side-title {
+    width: 100%; max-width: 960px; text-align: left; 
+    font-family: system-ui, sans-serif; font-size: 14px; font-weight: 800; 
+    color: var(--accent); text-transform: uppercase; letter-spacing: 2px;
+    margin-top: 20px; margin-bottom: -10px; padding-left: 10px;
+    border-bottom: 1px solid rgba(232,195,106,.2); padding-bottom: 5px;
+  }
+
+  .carousel { 
+    width:100%; max-width:960px; display:flex; gap:20px; overflow-x:auto; 
+    padding:10px 8px 20px; scroll-snap-type:x mandatory; scrollbar-width:thin; 
+    scrollbar-color:var(--accent) transparent; 
+  }
+  .carousel::-webkit-scrollbar { height:6px; }
+  .carousel::-webkit-scrollbar-thumb { background:var(--accent); border-radius:2px; }
+  
+  .track { 
+    flex:0 0 auto; width:200px; scroll-snap-align:center; background:var(--card); 
+    border-radius:4px; padding:10px; cursor:pointer; transition:transform .2s, box-shadow .2s; 
+    border:1px solid rgba(255,255,255,.05); text-align:left; display: flex; flex-direction: column;
+  }
+  .track:hover { transform:translateY(-5px); box-shadow: 0 10px 25px var(--glow); border-color: rgba(232,195,106,.3); }
+  .track.active { border:2px solid var(--accent); box-shadow:0 0 15px var(--glow); }
+  
+  .track__cover { width:100%; aspect-ratio:1/1; border-radius:2px; object-fit:cover; display:block; margin-bottom:12px; background:var(--bg2); pointer-events: none; flex-shrink: 0; }
+  
+  .track__num { font-size:11px; color:var(--accent); font-weight:800; letter-spacing:.1em; margin-bottom:6px; font-family: system-ui, sans-serif;}
+  .track__name { font-size:15px; font-weight:bold; margin-bottom:4px; line-height: 1.2; color: #fff; }
+  .track__desc { font-size:12px; color:var(--muted); line-height: 1.4; flex-grow: 1; font-style: italic; }
+
+  .player { 
+    width:100%; max-width:600px; background:var(--card); border-radius:8px; 
+    padding:20px; display:flex; flex-direction:column; gap:16px; 
+    box-shadow:0 15px 50px rgba(0,0,0,.8); border:1px solid rgba(232,195,106,.15); 
+    position: sticky; /* Вернули sticky, как в первом 2CD */
+    bottom: 10px; z-index: 10;
+  }
+  .player__now { display:flex; align-items:center; gap:16px; }
+  .player__cover { width:70px; height:70px; border-radius:4px; object-fit:cover; background:var(--bg2); border:1px solid var(--accent); pointer-events: none; }
+  .player__info { overflow:hidden; flex:1; }
+  .player__title { font-weight:bold; font-size:16px; line-height:1.25; margin-bottom:2px; color: #fff;}
+  .player__artist { color:var(--muted); font-size:13px; font-family: system-ui, sans-serif;}
+  .player audio { width:100%; outline: none; }
+  
+  .player__nav { display:flex; justify-content:center; gap:16px; }
+  .player__nav button { background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; color:#050814; padding:12px 24px; border-radius:4px; font-weight:800; font-size:14px; cursor:pointer; transition:filter 0.3s; text-transform: uppercase; letter-spacing: 1px; font-family: system-ui, sans-serif;}
+  .player__nav button:hover { filter:brightness(1.2); }
+</style>
+</head>
+<body>
+
+  <section class="album">
+    <img class="album__cover" id="albumCover" src="cover.jpg" alt="Album Cover">
+    <h1 class="album__title">Зодиак</h1>
+    <p class="album__sub">Двойной альбом 2×CD</p>
+    
+    <p class="album__announce">
+      Концептуальный двойной альбом из двенадцати оригинальных композиций — по одной на каждый знак зодиака. Тёплая аналоговая эстетика 70–80-х. Диск 1 «Огонь и Воздух» объединяет драйвовый поп-рок и арт-рок. Диск 2 «Земля и Вода» погружает в атмосферу блюз-рока и скандинавского симфо-попа.
+    </p>
+  </section>
+
+  <div class="side-title">CD 1: Огонь и Воздух</div>
+  <div class="carousel" id="carouselA"></div>
+
+  <div class="side-title">CD 2: Земля и Вода</div>
+  <div class="carousel" id="carouselB"></div>
+
+  <div class="player">
+    <div class="player__now">
+      <img class="player__cover" id="playerCover" src="cover.jpg" alt="Cover">
+      <div class="player__info">
+        <div class="player__title" id="playerTitle">Выбери трек</div>
+        <div class="player__artist" id="playerArtist">Зодиак</div>
+      </div>
+    </div>
+    <audio id="audio" controls controlslist="nodownload" preload="none"></audio>
+    <div class="player__nav">
+      <button id="prevBtn">⏮ Пред</button>
+      <button id="nextBtn">След ⏭</button>
+    </div>
+  </div>
+
+<script>
+  const album = {
+    title: "Зодиак",
+    cover: "cover.jpg",
+    cd1: [
+      { id: 1, name: "Овен (Aries)", desc: "Стадионный поп-рок 80-х" },
+      { id: 2, name: "Близнецы (Gemini)", desc: "Игривый европейский синти-поп" },
+      { id: 3, name: "Лев (Leo)", desc: "Королевский симфо-рок 70-х" },
+      { id: 4, name: "Весы (Libra)", desc: "Изящный французско-итальянский софт-рок" },
+      { id: 5, name: "Стрелец (Sagittarius)", desc: "Дорожный мелодичный рок 70-х" },
+      { id: 6, name: "Водолей (Aquarius)", desc: "Космический арт-рок" }
+    ],
+    cd2: [
+      { id: 7, name: "Телец (Taurus)", desc: "Тёплый блюз-рок 70-х" },
+      { id: 8, name: "Рак (Cancer)", desc: "Ностальгическая фортепианная баллада" },
+      { id: 9, name: "Дева (Virgo)", desc: "Скандинавский европоп 70-х" },
+      { id: 10, name: "Скорпион (Scorpio)", desc: "Мистический ночной софт-рок" },
+      { id: 11, name: "Козерог (Capricorn)", desc: "Монументальный классический рок" },
+      { id: 12, name: "Рыбы (Pisces)", desc: "Мечтательный симфо-поп" }
+    ]
+  };
+
+  let currentTrackId = -1;
+
+  const carouselA   = document.getElementById('carouselA');
+  const carouselB   = document.getElementById('carouselB');
+  const audio       = document.getElementById('audio');
+  const playerCover = document.getElementById('playerCover');
+  const playerTitle = document.getElementById('playerTitle');
+  const playerArtist= document.getElementById('playerArtist');
+
+  const pad = (n) => String(n).padStart(2,'0');
+  
+  const coverPath = (id) => `covers/${pad(id)}.jpg`;
+  const songPath  = (id) => `ru${pad(id)}.mp3`;
+
+  function createTrackElement(t) {
+    const el = document.createElement('div');
+    el.className = 'track' + (t.id === currentTrackId ? ' active' : '');
+    el.dataset.id = t.id;
+    el.innerHTML = `
+      <img class="track__cover" src="${coverPath(t.id)}" alt="${t.name}">
+      <div class="track__num">TRACK #${t.id}</div>
+      <div class="track__name">${t.name}</div>
+      <div class="track__desc">${t.desc}</div>
+    `;
+    el.addEventListener('click', () => play(t.id));
+    return el;
+  }
+
+  function renderCarousels(){
+    carouselA.innerHTML = '';
+    carouselB.innerHTML = '';
+    
+    album.cd1.forEach(t => carouselA.appendChild(createTrackElement(t)));
+    album.cd2.forEach(t => carouselB.appendChild(createTrackElement(t)));
+  }
+
+  function play(id){
+    let track = album.cd1.find(t => t.id === id) || album.cd2.find(t => t.id === id);
+    if (!track) return;
+
+    currentTrackId = id;
+
+    playerCover.src = coverPath(id);
+    playerTitle.textContent = track.name;
+    playerArtist.textContent = track.desc;
+
+    document.querySelectorAll('.track').forEach(el => {
+      const isCurrent = parseInt(el.dataset.id) === id;
+      el.classList.toggle('active', isCurrent);
+      
+      if (isCurrent) {
+        el.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+      }
+    });
+
+    audio.src = songPath(id);
+    audio.play().catch(()=>{});
+  }
+
+  function playNextPrev(step) {
+    let allTracks = [...album.cd1, ...album.cd2];
+    let currentIndex = allTracks.findIndex(t => t.id === currentTrackId);
+    if (currentIndex === -1) currentIndex = 0;
+    
+    let nextIndex = currentIndex + step;
+    if (nextIndex < 0) nextIndex = allTracks.length - 1;
+    if (nextIndex >= allTracks.length) nextIndex = 0;
+    
+    play(allTracks[nextIndex].id);
+  }
+
+  document.getElementById('prevBtn').onclick = () => playNextPrev(-1);
+  document.getElementById('nextBtn').onclick = () => playNextPrev(1);
+  audio.addEventListener('ended', () => playNextPrev(1));
+
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('dragstart', e => e.preventDefault());
+
+  renderCarousels();
+</script>
+</body>
+</html>
